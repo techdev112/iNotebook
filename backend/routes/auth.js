@@ -54,7 +54,7 @@ router.post(
   }
 );
 
-//ROUTE 2: Create a User using : POST "/api/auth/createuser", No Login is Required
+//ROUTE 2: For user login using : POST "/api/auth/login", No Login is Required
 router.post(
   "/login",
   [
