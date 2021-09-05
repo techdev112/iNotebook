@@ -4,9 +4,10 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
+const fetchuser = require("../middleware/fetchuser");
 
 const JWT_SECRET = "FellowDev";
-// Create a User using : POST "/api/auth/createuser", No Login is Required
+//ROUTE: 1 Create a User using : POST "/api/auth/createuser", No Login is Required
 router.post(
   "/createuser",
   [
@@ -47,13 +48,13 @@ router.post(
 
       res.json({ authToken });
     } catch (error) {
-      res.status(500).send({ error: "Internal server occured" });
       console.error(error);
+      res.status(500).send({ error: "Internal server occured" });
     }
   }
 );
 
-// Create a User using : POST "/api/auth/createuser", No Login is Required
+//ROUTE 2: Create a User using : POST "/api/auth/createuser", No Login is Required
 router.post(
   "/login",
   [
@@ -68,15 +69,19 @@ router.post(
     }
     const { email, password } = req.body;
     try {
-      let user = await User.findOne({ email })
+      let user = await User.findOne({ email });
 
-      if(!user) {
-        return res.status(400).json({error: "Please try to login with correct credentials"})
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "Please try to login with correct credentials" });
       }
 
-      const passwordCompare = await bcrypt.compare(password, user.password)
-      if(!passwordCompare) {
-        return res.status(400).json({error: "Please try to login with correct credentials"})
+      const passwordCompare = await bcrypt.compare(password, user.password);
+      if (!passwordCompare) {
+        return res
+          .status(400)
+          .json({ error: "Please try to login with correct credentials" });
       }
       const data = {
         user: {
@@ -86,10 +91,21 @@ router.post(
       const authToken = jwt.sign(data, JWT_SECRET);
       res.json({ authToken });
     } catch (error) {
-      res.status(500).send({ error: "Internal Server occured" });
       console.error(error);
+      res.status(500).send({ error: "Internal Server occured" });
     }
   }
 );
 
+//ROUTE 3: Get a loggedin user details : POST "/api/auth/getuser", Login is Required
+router.post("/getuser", fetchuser, async (req, res) => {
+  try {
+    userId = req.user.id;
+    const user  = await User.findById(userId).select("-password")
+    res.send(user)
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Internal Server occured" });
+  }
+});
 module.exports = router;
